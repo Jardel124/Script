@@ -1,1 +1,189 @@
+local Player = game.Players.LocalPlayer
 
+if game.CoreGui:FindFirstChild("CoolScriptGui") then
+	game.CoreGui:FindFirstChild("CoolScriptGui"):Destroy()
+end
+
+local Gui = Instance.new("ScreenGui", game.CoreGui)
+Gui.Name = "CoolScriptGui"
+Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = false
+
+local Frame = Instance.new("Frame", Gui)
+Frame.Size = UDim2.new(.4, 0, .4, 0)
+Frame.BackgroundTransparency = .2
+Frame.Position = UDim2.new(.5, 0, .5, 0)
+Frame.AnchorPoint = Vector2.new(.5, .5)
+Frame.BorderSizePixel = 0
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+local Scroller = Instance.new("ScrollingFrame", Frame)
+Scroller.Size = UDim2.new(1, 0, 1, 0)
+Scroller.BackgroundTransparency = 1
+Scroller.CanvasSize = UDim2.new(0, 0, 0, 0)
+Scroller.ScrollBarThickness = 0
+Scroller.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local UIListLayout = Instance.new("UIListLayout", Scroller)
+UIListLayout.Padding = UDim.new(0, 10)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(.05, 0)
+
+local UIStroke = Instance.new("UIStroke", Frame)
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(255, 255, 255)
+
+function createButton(configs)
+	local Infos = {
+		Text = configs.Text or "Null",
+		Callback = configs.Callback or function() end,
+		Index = configs.Index
+	}
+
+	if Infos.Index == nil then
+		Infos.Index = #Scroller:GetChildren() + 1
+	end
+
+	local Button = Instance.new("TextButton", Scroller)
+	Button.Size = UDim2.new(1, 0, 0, 50)
+	Button.Text = Infos.Text
+	Button.LayoutOrder = Infos.Index
+	Button.BackgroundTransparency = .8
+	Button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Button.TextStrokeTransparency = 0
+	Button.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	Button.TextScaled = true
+
+	local UICorner = Instance.new("UICorner", Button)
+	UICorner.CornerRadius = UDim.new(.1, 0)
+
+	local UIStroke = Instance.new("UIStroke", Button)
+	UIStroke.Thickness = 2
+	UIStroke.Color = Color3.fromRGB(255, 255, 255)
+
+	Button.MouseButton1Click:Connect(function()
+		Infos.Callback()
+	end)
+
+	return Button
+end
+
+function createLabel(configs)
+	local Infos = {
+		Text = configs.Text or "Null",
+		Index = configs.Index
+	}
+
+	if Infos.Index == nil then
+		Infos.Index = #Scroller:GetChildren() + 1
+	end
+
+	local Label = Instance.new("TextLabel", Scroller)
+	Label.Size = UDim2.new(1, 0, 0, 40)
+	Label.Text = Infos.Text
+	Label.LayoutOrder = Infos.Index
+	Label.BackgroundTransparency = 1
+	Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Label.TextStrokeTransparency = 0
+	Label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	Label.TextScaled = true
+
+	return Label
+end
+
+function createToggle(configs)
+	local Infos = {
+		Text = configs.Text or "Toggle",
+		Index = configs.Index,
+		Callback = configs.Callback or function() end
+	}
+
+	if Infos.Index == nil then
+		Infos.Index = #Scroller:GetChildren() + 1
+	end
+
+	local Value = Instance.new("BoolValue")
+	Value.Name = Infos.Text .. "Value"
+	Value.Value = false
+
+	local Toggle = Instance.new("TextButton", Scroller)
+	Toggle.Size = UDim2.new(1, 0, 0, 50)
+	Toggle.LayoutOrder = Infos.Index
+	Toggle.BackgroundTransparency = .8
+	Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Toggle.TextStrokeTransparency = 0
+	Toggle.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	Toggle.TextScaled = true
+
+	local UICorner = Instance.new("UICorner", Toggle)
+	UICorner.CornerRadius = UDim.new(.1, 0)
+
+	local UIStroke = Instance.new("UIStroke", Toggle)
+	UIStroke.Thickness = 2
+	UIStroke.Color = Color3.fromRGB(255, 255, 255)
+
+	local function Update()
+		if Value.Value then
+			Toggle.Text = Infos.Text .. ": ON"
+			Toggle.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+		else
+			Toggle.Text = Infos.Text .. ": OFF"
+			Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		end
+	end
+
+	Value.Changed:Connect(function(NewValue)
+		Update()
+		Infos.Callback(NewValue)
+	end)
+
+	Toggle.MouseButton1Click:Connect(function()
+		Value.Value = not Value.Value
+	end)
+
+	Update()
+
+	return Toggle, Value :: BoolValue
+end
+
+createLabel({
+	Text = "=== TESTE ==="
+})
+
+local FakeCoins = 0
+
+local CoinLabel = createLabel({
+	Text = "Fake Coins: 0"
+})
+
+local FakeFarmToggle, FakeFarmValue = createToggle({
+	Text = "Fake Auto Farm",
+
+	Callback = function(State)
+		if State then
+			task.spawn(function()
+				while FakeFarmValue.Value do
+					FakeCoins += 10
+					CoinLabel.Text = "Fake Coins: " .. FakeCoins
+					print("[FakeFarm] +10 Fake Coins")
+					task.wait(1)
+				end
+			end)
+		end
+	end
+})
+
+createButton({
+	Text = "Reset Fake Coins",
+
+	Callback = function()
+		FakeCoins = 0
+		CoinLabel.Text = "Fake Coins: 0"
+	end
+})
