@@ -4,6 +4,8 @@ if game.CoreGui:FindFirstChild("CoolScriptGui") then
 	game.CoreGui:FindFirstChild("CoolScriptGui"):Destroy()
 end
 
+warn('Executando')
+
 local Gui = Instance.new("ScreenGui", game.CoreGui)
 Gui.Name = "CoolScriptGui"
 Gui.ResetOnSpawn = false
